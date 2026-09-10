@@ -1,0 +1,148 @@
+<!doctype html><html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工作代辦</title><style>*{box-sizing:border-box}body{margin:0;padding:16px;background:#f5f6f8;font-family:"Microsoft JhengHei",sans-serif}.page{max-width:1400px;margin:auto}.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}h1{margin:0;font-size:27px}.tabs{margin-left:auto;display:flex;gap:6px}button,input,select{font:inherit;border:1px solid #9ca3af;border-radius:5px;background:#fff;min-height:36px;padding:6px 9px}button{cursor:pointer}.active{background:#2563eb;color:#fff;border-color:#2563eb}.tabs button{width:70px}.tabs #done{width:58px}.tabs #toggle{width:86px}.box{display:grid;grid-template-columns:1.2fr 1.2fr 1.5fr 105px 130px 65px;gap:8px;padding:13px;background:#fff;border-radius:10px;margin-bottom:12px}.hide{display:none!important}table{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff}td{border:1px solid #d1d5db;padding:8px;vertical-align:middle}#list td:nth-child(1),#list td:nth-child(2){font-size:16px}#list td:nth-child(n+3){font-size:18px}.links,.action{display:flex;gap:8px;align-items:center}.link{color:#0563c1;text-decoration:underline;border:0;padding:0;min-height:auto}.action{position:relative}.dot{width:12px;height:12px;min-height:12px;padding:0;border-radius:50%}.palette{display:none;position:absolute;right:0;bottom:100%;z-index:5;padding:5px;gap:4px;background:white;border:1px solid #94a3b8;border-radius:6px}.palette.show{display:flex}.palette button{width:17px;height:17px;min-height:17px;padding:0;border-radius:50%}.date{position:relative;width:6.5ch}.date span{display:block;width:6.5ch;min-height:40px;padding:8px 4px;border:1px solid #9ca3af;border-radius:5px;white-space:nowrap;overflow:hidden}.date input{position:absolute;inset:0;width:100%;height:100%;opacity:0}.modal{display:none;position:fixed;inset:0;z-index:10;background:#0006;align-items:center;justify-content:center}.modal.show{display:flex}.dialog{width:min(440px,90vw);padding:18px;background:#fff;border-radius:10px}.dialog input{width:100%;margin:10px 0}.empty{text-align:center;padding:25px;background:#fff}@media(max-width:600px){body{padding:5px}.top{flex-wrap:wrap}.tabs{margin-left:auto}.box{grid-template-columns:1fr;padding:9px}table,tbody,tr,td{display:block;width:100%}tr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:8px;border:1px solid #d1d5db;border-radius:8px;overflow:hidden}td{min-width:0;padding:6px;border:0;border-right:1px solid #e5e7eb}td:nth-child(1),td:nth-child(2){grid-column:span 2;border-bottom:1px solid #e5e7eb}td input,td select{width:100%;min-width:0;padding:5px;font-size:14px!important}.links,.action{justify-content:center;gap:5px}.date{width:100%}.date span{width:100%;font-size:14px}#list td:nth-child(n+3){font-size:14px}}</style></head><body><main class="page"><div class="top"><h1>工作代辦</h1><div class="tabs"><button id="todo" class="active" onclick="setView('todo')">未完成</button><button id="done" onclick="setView('done')">完成</button><button id="toggle" onclick="toggleForm()">關閉新增</button></div></div><section id="form" class="box"><input id="work" placeholder="工作項目"><input id="note" placeholder="備註"><input id="taskLink" placeholder="連結（資料夾／檔案／網址）"><select id="status"><option>待處理</option><option>進行中</option><option>等待回覆</option><option>完成</option></select><input id="date" type="date"><button onclick="add()">新增</button></section><div id="empty" class="empty hide"></div><table id="table"><tbody id="list"></tbody></table></main><div id="modal" class="modal"><div class="dialog"><b>編輯連結</b><input id="editor"><button onclick="closeModal()">取消</button><button onclick="saveLink()">儲存</button></div></div><script>const key='Engineering_Work_List',states=['待處理','進行中','等待回覆','完成'];let tasks=JSON.parse(localStorage.getItem(key))||[],view='todo',editing=-1;const today=()=>new Date().toLocaleDateString('en-CA'),save=()=>localStorage.setItem(key,JSON.stringify(tasks)),e=x=>String(x||'').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');date.value=today();function add(){let t={work:work.value.trim(),note:note.value.trim(),link:taskLink.value.trim(),status:status.value,date:date.value||today(),color:'#fff'};if(!t.work)return alert('請輸入工作項目。');tasks.push(t);save();work.value=note.value=taskLink.value='';date.value=today();render()}function setView(x){view=x;render()}function edit(i,k,v){tasks[i][k]=v;save();render()}function del(i){if(confirm('確定刪除？')){tasks.splice(i,1);save();render()}}function toggleForm(){form.classList.toggle('hide');toggle.textContent=form.classList.contains('hide')?'開啟新增':'關閉新增'}function copy(i){let x=tasks[i].link||'';if(!x)return alert('尚未設定連結。');navigator.clipboard?.writeText(x).catch(()=>{});let a=document.createElement('textarea');a.value=x;document.body.append(a);a.select();document.execCommand('copy');a.remove();alert('已複製連結／路徑。')}function openEdit(i){editing=i;editor.value=tasks[i].link||'';modal.classList.add('show');editor.focus()}function closeModal(){modal.classList.remove('show')}function saveLink(){if(editing>=0)edit(editing,'link',editor.value.trim());closeModal()}function color(i,c){edit(i,'color',c)}function palette(i){document.getElementById('p'+i).classList.toggle('show')}function opts(v){return states.map(s=>'<option '+(s===v?'selected':'')+'>'+s+'</option>').join('')}function render(){todo.classList.toggle('active',view==='todo');done.classList.toggle('active',view==='done');let rows=tasks.map((t,i)=>({t:{color:'#fff',...t},i})).filter(x=>view==='done'?x.t.status==='完成':x.t.status!=='完成');empty.textContent=view==='done'?'目前沒有已完成的工作。':'目前沒有未完成的工作。';empty.classList.toggle('hide',rows.length>0);table.classList.toggle('hide',!rows.length);list.innerHTML=rows.map(({t,i})=>'<tr style="background:'+e(t.color)+'"><td><input value="'+e(t.work)+'" onchange="edit('+i+',\'work\',this.value)"></td><td><input value="'+e(t.note)+'" onchange="edit('+i+',\'note\',this.value)"></td><td><div class="links"><button class="link" onclick="copy('+i+')">複製</button><button class="link" onclick="openEdit('+i+')">編輯</button></div></td><td><select onchange="edit('+i+',\'status\',this.value)">'+opts(t.status)+'</select></td><td><div class="date"><span>'+(t.date?t.date.slice(5).replace('-','/'):'--/--')+'</span><input type="date" value="'+e(t.date)+'" onchange="edit('+i+',\'date\',this.value)"></div></td><td><div class="action"><div id="p'+i+'" class="palette"><button style="background:#fff" onclick="color('+i+',\'#fff\')"></button><button style="background:#fff3bf" onclick="color('+i+',\'#fff3bf\')"></button><button style="background:#d3f9d8" onclick="color('+i+',\'#d3f9d8\')"></button><button style="background:#dbeafe" onclick="color('+i+',\'#dbeafe\')"></button></div><button class="dot" style="background:'+e(t.color)+'" onclick="palette('+i+')"></button><button onclick="del('+i+')">刪除</button></div></td></tr>').join('')}render();</script></body></html><template>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>工作代辦</title>
+<style>
+body{font-family:"Microsoft JhengHei";background:#f5f6f8;margin:20px}
+h1{font-size:26px}
+.box{background:white;padding:15px;border-radius:10px;margin-bottom:15px}
+input,select,button{height:34px;padding:5px 10px}
+table{width:100%;border-collapse:collapse;background:white;table-layout:fixed}
+th,td{border:1px solid #ddd;padding:8px}
+th{text-align:center;background:#fafafa}
+td:nth-child(1),td:nth-child(2),td:nth-child(3){text-align:left}
+.cell{width:95%;box-sizing:border-box}
+.linkBtn{color:#0563c1;text-decoration:underline;cursor:pointer}
+</style>
+</head>
+<body>
+
+<h1>工作代辦</h1>
+
+<div class="box">
+<input id="work" placeholder="工作項目" style="width:220px">
+<input id="note" placeholder="備註" style="width:220px">
+<input id="link" placeholder="連結(資料夾/檔案/網址)" style="width:260px">
+<select id="status">
+<option>待處理</option>
+<option>進行中</option>
+<option>等待</option>
+<option>完成</option>
+</select>
+<input id="date" type="date">
+<button onclick="addTask()">新增</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th style="width:40%">工作項目</th>
+<th style="width:25%">備註</th>
+<th style="width:20%">連結</th>
+<th style="width:8%">狀態</th>
+<th style="width:10%">建立日期</th>
+<th style="width:7%">操作</th>
+</tr>
+</thead>
+<tbody id="list"></tbody>
+</table>
+
+<script>
+let tasks=JSON.parse(localStorage.getItem("Engineering_Work_List"))||[];
+
+function save(){localStorage.setItem("Engineering_Work_List",JSON.stringify(tasks));}
+
+function addTask(){
+let t={
+work:work.value,
+note:note.value,
+link:link.value,
+status:status.value,
+date:date.value
+};
+if(!t.work.trim()) return alert("請輸入工作項目");
+tasks.push(t);
+save();render();
+work.value="";note.value="";link.value="";
+}
+
+function edit(i,k,v){
+tasks[i][k]=v;
+save();
+}
+
+function removeTask(i){
+tasks.splice(i,1);
+save();render();
+}
+
+// 判斷連結類型
+function openLink(i){
+let p=tasks[i].link.trim();
+
+if(/^https?:\/\//i.test(p)){
+    // 網路連結 -> 瀏覽器
+    window.open(p,"_blank");
+}else{
+    // 本機資料夾或檔案 -> 檔案總管
+    let path=p.replaceAll("\\","/");
+    window.open("file:///"+path);
+}
+}
+
+function esc(s){
+return (s||"").replaceAll("&","&amp;").replaceAll('"',"&quot;")
+.replaceAll("<","&lt;").replaceAll(">","&gt;");
+}
+
+function render(){
+let h="";
+tasks.forEach((t,i)=>{
+h+=`
+<tr>
+<td><input class="cell" value="${esc(t.work)}" onchange="edit(${i},'work',this.value)"></td>
+<td><input class="cell" value="${esc(t.note)}" onchange="edit(${i},'note',this.value)"></td>
+<td>
+<input class="cell" value="${esc(t.link)}" onchange="edit(${i},'link',this.value)">
+${t.link?`<br><span class="linkBtn" onclick="openLink(${i})">開啟</span>`:""}
+</td>
+<td>
+<select onchange="edit(${i},'status',this.value)">
+<option ${t.status=="待處理"?"selected":""}>待處理</option>
+<option ${t.status=="進行中"?"selected":""}>進行中</option>
+<option ${t.status=="等待"?"selected":""}>等待</option>
+<option ${t.status=="完成"?"selected":""}>完成</option>
+</select>
+</td>
+<td><input type="date" value="${t.date||""}" onchange="edit(${i},'date',this.value)"></td>
+<td><button onclick="removeTask(${i})">刪除</button></td>
+</tr>`;
+});
+list.innerHTML=h;
+}
+document.head.insertAdjacentHTML('beforeend','<style>#table{font-size:150%}#table td:nth-child(1) input,#table td:nth-child(2) input{font-size:16px}#table td:nth-child(n+3){font-size:12px}#table td:nth-child(n+3) input,#table td:nth-child(n+3) select,#table td:nth-child(n+3) button{font-size:inherit}</style>');render();
+</script>
+</body>
+</html>
+-->
+<!doctype html><html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工作代辦</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:20px;background:#f5f6f8;font-family:"Microsoft JhengHei",system-ui,sans-serif;color:#1f2937}.page{max-width:1400px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}h1{margin:0;font-size:28px}.tabs{display:flex;gap:8px}.box{display:grid;grid-template-columns:1.25fr 1.25fr 1.45fr auto 150px auto;gap:8px;background:#fff;padding:15px;border-radius:12px;margin-bottom:15px}input,select,button{min-height:38px;padding:7px 10px;border:1px solid #9ca3af;border-radius:5px;background:#fff;font:inherit}button{cursor:pointer}.tabs .active{color:#fff;background:#2563eb;border-color:#2563eb}table{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff}th,td{border:1px solid #d1d5db;padding:9px;vertical-align:middle}th{background:#f9fafb}.cell{width:100%}.links{display:flex;gap:10px}.link{border:0;padding:0;min-height:auto;color:#0563c1;text-decoration:underline;background:transparent}.color{width:42px;padding:2px}.empty{text-align:center;padding:28px;background:#fff;border:1px solid #d1d5db;color:#6b7280}.hidden{display:none}@media(max-width:850px){body{padding:12px}.top{align-items:flex-start;flex-direction:column}.tabs{width:100%}.tabs button{flex:1}.box{grid-template-columns:1fr;padding:12px}.box button{width:100%}table,tbody,tr,td{display:block;width:100%}thead{display:none}table{background:transparent}tr{margin-bottom:12px;border:1px solid #d1d5db;border-radius:8px;overflow:hidden}td{display:grid;grid-template-columns:78px minmax(0,1fr);gap:8px;align-items:center;border:0;border-bottom:1px solid #e5e7eb}td:last-child{border:0}td:before{content:attr(data-label);font-weight:bold;color:#4b5563}td[data-label="操作"]{grid-template-columns:78px auto auto}}
+</style><style>input[type="date"]::-webkit-calendar-picker-indicator{opacity:0;position:absolute;inset:0;width:100%;height:100%;cursor:pointer}.row-colors{display:flex;align-items:center;gap:3px;flex-wrap:wrap}.color{width:18px;height:18px;min-height:18px;padding:0;border:0;border-radius:3px;cursor:pointer}.preset{width:14px;height:14px;min-height:14px;padding:0;border:1px solid #9ca3af;border-radius:50%;cursor:pointer}.preset[title="白色"]{background:#fff}.preset[title="淡黃"]{background:#fff3bf}.preset[title="淡綠"]{background:#d3f9d8}.preset[title="淡藍"]{background:#dbeafe}.preset[title="淡紅"]{background:#ffe3e3}@media(max-width:850px){td[data-label="顏色"]{grid-template-columns:78px 1fr}}</style></head><body><main class="page"><div class="top"><h1>工作代辦</h1><div class="tabs"><button id="todoTab" class="active" onclick="view('todo')">未完成</button><button id="doneTab" onclick="view('done')">完成</button></div></div><section class="box"><input id="work" placeholder="工作項目"><input id="note" placeholder="備註"><input id="url" placeholder="連結（資料夾／檔案／網址）"><select id="status"><option>待處理</option><option>進行中</option><option>等待回覆</option><option>完成</option></select><input id="date" type="date" onclick="this.showPicker&&this.showPicker()"><button onclick="add()">新增</button></section><div id="empty" class="empty hidden"></div><table id="table"><thead><tr><th style="width:9%">顏色</th><th style="width:27%">工作項目</th><th style="width:20%">備註</th><th style="width:12%">連結</th><th style="width:11%">狀態</th><th style="width:13%">建立日期</th><th style="width:8%">操作</th></tr></thead><tbody id="list"></tbody></table></main>
+<script>
+const key='Engineering_Work_List',statuses=['待處理','進行中','等待回覆','完成'];let tasks=JSON.parse(localStorage.getItem(key))||[],mode='todo';const today=()=>new Date().toLocaleDateString('en-CA'),save=()=>localStorage.setItem(key,JSON.stringify(tasks)),esc=v=>String(v||'').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;'),norm=t=>({work:'',note:'',link:'',status:'待處理',date:'',color:'#ffffff',...t});
+function add(){let t={work:work.value.trim(),note:note.value.trim(),link:url.value.trim(),status:status.value,date:date.value||today(),color:'#ffffff'};if(!t.work)return alert('請輸入工作項目。');tasks.push(t);save();render();work.value=note.value=url.value='';status.value='待處理';date.value=today()}function edit(i,k,v){tasks[i][k]=v;save();render()}function del(i){if(confirm('確定要刪除此工作嗎？')){tasks.splice(i,1);save();render()}}function view(v){mode=v;render()}function editLink(i){let v=prompt('請輸入連結、檔案或資料夾路徑：',tasks[i].link||'');if(v!==null)edit(i,'link',v.trim())}function openLink(i){let v=(tasks[i].link||'').trim();if(!v)return alert('尚未設定連結。');if(/^https?:\/\//i.test(v))return window.open(v,'_blank','noopener');window.open('file:///'+encodeURI(v.replaceAll('\\','/').replace(/^\/+/,'')),'_blank')}function opts(v){return statuses.map(x=>`<option ${v===x?'selected':''}>${x}</option>`).join('')}
+function render(){let rows=tasks.map((x,i)=>({t:norm(x),i})).filter(x=>mode==='done'?x.t.status==='完成':x.t.status!=='完成');todoTab.classList.toggle('active',mode==='todo');doneTab.classList.toggle('active',mode==='done');empty.textContent=mode==='done'?'目前沒有已完成的工作。':'目前沒有未完成的工作。';empty.classList.toggle('hidden',!!rows.length);table.classList.toggle('hidden',!rows.length);list.innerHTML=rows.map(({t,i})=>`<tr style="background-color:${esc(t.color)}"><td data-label="工作項目"><input class="cell" value="${esc(t.work)}" onchange="edit(${i},'work',this.value)"></td><td data-label="備註"><input class="cell" value="${esc(t.note)}" onchange="edit(${i},'note',this.value)"></td><td data-label="連結"><div class="links"><button class="link" onclick="openLink(${i})">開啟</button><button class="link" onclick="editLink(${i})">編輯</button></div></td><td data-label="狀態"><select onchange="edit(${i},'status',this.value)">${opts(t.status)}</select></td><td data-label="建立日期"><input type="date" value="${esc(t.date)}" onchange="edit(${i},'date',this.value)"></td><td data-label="操作"><input class="color" type="color" value="${esc(t.color)}" title="設定此列底色" onchange="edit(${i},'color',this.value)"><button onclick="del(${i})">刪除</button></td></tr>`).join('')};date.value=today();render();
+</script><script>
+function setColor(i,color){edit(i,'color',color)}
+function render(){let rows=tasks.map((x,i)=>({t:norm(x),i})).filter(x=>mode==='done'?x.t.status==='完成':x.t.status!=='完成');todoTab.classList.toggle('active',mode==='todo');doneTab.classList.toggle('active',mode==='done');empty.textContent=mode==='done'?'目前沒有已完成的工作。':'目前沒有未完成的工作。';empty.classList.toggle('hidden',!!rows.length);table.classList.toggle('hidden',!rows.length);list.innerHTML=rows.map(({t,i})=>`<tr style="background-color:${esc(t.color)}"><td data-label="顏色"><div class="row-colors"><input class="color" type="color" value="${esc(t.color)}" title="自訂底色" onchange="edit(${i},'color',this.value)"><button class="preset" title="白色" onclick="setColor(${i},'#ffffff')"></button><button class="preset" title="淡黃" onclick="setColor(${i},'#fff3bf')"></button><button class="preset" title="淡綠" onclick="setColor(${i},'#d3f9d8')"></button><button class="preset" title="淡藍" onclick="setColor(${i},'#dbeafe')"></button><button class="preset" title="淡紅" onclick="setColor(${i},'#ffe3e3')"></button></div></td><td data-label="工作項目"><input class="cell" value="${esc(t.work)}" onchange="edit(${i},'work',this.value)"></td><td data-label="備註"><input class="cell" value="${esc(t.note)}" onchange="edit(${i},'note',this.value)"></td><td data-label="連結"><div class="links"><button class="link" onclick="openLink(${i})">開啟</button><button class="link" onclick="editLink(${i})">編輯</button></div></td><td data-label="狀態"><select onchange="edit(${i},'status',this.value)">${opts(t.status)}</select></td><td data-label="建立日期"><input type="date" value="${esc(t.date)}" onclick="this.showPicker&&this.showPicker()" onchange="edit(${i},'date',this.value)"></td><td data-label="操作"><button onclick="del(${i})">刪除</button></td></tr>`).join('')}
+render();/* legacy */
+</script><style>
+.action{position:relative;display:flex;align-items:center;gap:7px}.color-dot{width:12px;height:12px;min-height:12px;padding:0;border:1px solid #64748b;border-radius:50%;background:#dbeafe}.palette{display:none;position:absolute;z-index:10;right:0;bottom:calc(100% + 6px);padding:6px;gap:5px;background:#fff;border:1px solid #94a3b8;border-radius:6px;box-shadow:0 3px 10px #0003}.palette.show{display:flex}.palette button{width:17px;height:17px;min-height:17px;padding:0;border:1px solid #94a3b8;border-radius:50%}.palette button:nth-child(1){background:#fff}.palette button:nth-child(2){background:#fff3bf}.palette button:nth-child(3){background:#d3f9d8}.palette button:nth-child(4){background:#dbeafe}.palette button:nth-child(5){background:#ffe3e3}@media(min-width:601px) and (max-width:850px){table{display:table}thead{display:table-header-group}tbody{display:table-row-group}tr{display:table-row;margin:0;border:0;border-radius:0}td{display:table-cell;width:auto;border:1px solid #d1d5db}td:before{display:none}}
+input[type="date"]::-webkit-calendar-picker-indicator{opacity:1;position:static;inset:auto;width:auto;height:auto;cursor:pointer}.modal-mask{display:none;position:fixed;z-index:100;inset:0;padding:16px;background:#0006;align-items:center;justify-content:center}.modal-mask.show{display:flex}.modal{width:min(460px,100%);padding:18px;background:#fff;border-radius:10px;box-shadow:0 8px 24px #0004}.modal h2{margin:0 0 12px;font-size:20px}.modal input{margin-bottom:12px}.modal-actions{display:flex;justify-content:flex-end;gap:8px}@media(max-width:600px){body{padding:5px}.page{width:100%}.box{padding:10px}tr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:8px;border:1px solid #d1d5db;border-radius:8px;overflow:hidden}td{display:flex;flex-direction:column;gap:4px;min-width:0;padding:6px;border:0;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb}td:before{display:block;font-size:13px}td:nth-child(1),td:nth-child(2){grid-column:span 2}td:nth-child(n+3){grid-column:span 1}td:nth-child(4){grid-column:span 1}td:nth-child(5){grid-column:span 1}td:nth-child(6){grid-column:span 1}td:nth-child(2),td:nth-child(6){border-right:0}td:nth-child(n+3){border-bottom:0}td input,td select{min-width:0;min-height:34px;padding:5px 6px;font-size:14px}.links{gap:6px;min-height:34px;align-items:center}.action{min-height:34px;gap:5px}.action button{min-height:34px;padding:4px 6px;font-size:14px}}</style><script>
+document.querySelector('#table thead tr').innerHTML='<th style="width:28%">工作項目</th><th style="width:21%">備註</th><th style="width:12%">連結</th><th style="width:11%">狀態</th><th style="width:14%">建立日期</th><th style="width:14%">操作</th>';document.querySelector('.tabs').insertAdjacentHTML('beforeend','<button id="addToggle" onclick="toggleAdd()">關閉新增</button>');document.head.insertAdjacentHTML('beforeend','<style>.tabs{margin-left:auto}.tabs button{width:72px}.tabs #doneTab{width:60px}.tabs #addToggle{width:88px}@media(max-width:600px){.top{gap:8px;margin-bottom:8px}.tabs{width:auto;margin-left:auto;align-self:flex-end}.tabs button{flex:none;width:72px}.tabs #doneTab{width:60px}.tabs #addToggle{width:88px}td:before{display:none}td{padding:7px}td:nth-child(1),td:nth-child(2){grid-column:span 2}td:nth-child(n+3){padding-top:7px}.links{justify-content:center}.action{justify-content:center}}</style>');function toggleAdd(){const panel=document.querySelector('.box'),button=document.getElementById('addToggle'),closed=panel.classList.toggle('hidden');button.textContent=closed?'開啟新增':'關閉新增'}
+document.head.insertAdjacentHTML('beforeend','<style>#table thead,#table td:before{display:none!important}#table{font-size:25%}#table input,#table select,#table button{font-size:inherit}#table td:nth-child(1) input,#table td:nth-child(2) input{font-size:16px}</style>');let editingLinkIndex=null;document.body.insertAdjacentHTML('beforeend','<div id="linkModal" class="modal-mask" onclick="if(event.target===this)closeLinkModal()"><div class="modal"><h2>編輯連結</h2><input id="linkEditor" placeholder="輸入網址、檔案或資料夾路徑"><div class="modal-actions"><button onclick="closeLinkModal()">取消</button><button onclick="saveLinkModal()">儲存</button></div></div></div>');function editLink(i){editingLinkIndex=i;linkEditor.value=tasks[i].link||'';linkModal.classList.add('show');setTimeout(()=>linkEditor.focus(),0)}function closeLinkModal(){linkModal.classList.remove('show');editingLinkIndex=null}function saveLinkModal(){if(editingLinkIndex!==null){tasks[editingLinkIndex].link=linkEditor.value.trim();save();closeLinkModal();render()}}function togglePalette(i){document.querySelectorAll('.palette').forEach(p=>{if(p.id!=='palette-'+i)p.classList.remove('show')});document.getElementById('palette-'+i).classList.toggle('show')}
+function render(){let rows=tasks.map((x,i)=>({t:norm(x),i})).filter(x=>mode==='done'?x.t.status==='完成':x.t.status!=='完成');todoTab.classList.toggle('active',mode==='todo');doneTab.classList.toggle('active',mode==='done');empty.textContent=mode==='done'?'目前沒有已完成的工作。':'目前沒有未完成的工作。';empty.classList.toggle('hidden',!!rows.length);table.classList.toggle('hidden',!rows.length);list.innerHTML=rows.map(({t,i})=>`<tr style="background-color:${esc(t.color)}"><td data-label="工作項目"><input class="cell" value="${esc(t.work)}" onchange="edit(${i},'work',this.value)"></td><td data-label="備註"><input class="cell" value="${esc(t.note)}" onchange="edit(${i},'note',this.value)"></td><td data-label="連結"><div class="links"><button class="link" onclick="openLink(${i})">開啟</button><button class="link" onclick="editLink(${i})">編輯</button></div></td><td data-label="狀態"><select onchange="edit(${i},'status',this.value)">${opts(t.status)}</select></td><td data-label="建立日期"><input type="date" value="${esc(t.date)}" onclick="this.showPicker&&this.showPicker()" onchange="edit(${i},'date',this.value)"></td><td data-label="操作"><div class="action"><div class="palette" id="palette-${i}"><button title="白色" onclick="setColor(${i},'#ffffff')"></button><button title="淡黃" onclick="setColor(${i},'#fff3bf')"></button><button title="淡綠" onclick="setColor(${i},'#d3f9d8')"></button><button title="淡藍" onclick="setColor(${i},'#dbeafe')"></button><button title="淡紅" onclick="setColor(${i},'#ffe3e3')"></button></div><button class="color-dot" title="設定列底色" style="background-color:${esc(t.color)}" onclick="togglePalette(${i})"></button><button onclick="del(${i})">刪除</button></div></td></tr>`).join('')}
+render();</script></template><style>#table{table-layout:fixed}#list td{overflow-wrap:anywhere;word-break:break-word}#list td input,#list td select{max-width:100%;min-width:0}.links-off #list td:nth-child(3){display:none!important}</style><script>let linksVisible=true;document.querySelector('.tabs').insertAdjacentHTML('beforeend','<button id="linkToggle" onclick="toggleLinks()">關閉連結</button>');function toggleLinks(){linksVisible=!linksVisible;document.getElementById('table').classList.toggle('links-off',!linksVisible);document.getElementById('taskLink').classList.toggle('hide',!linksVisible);document.getElementById('linkToggle').textContent=linksVisible?'關閉連結':'開啟連結'}</script><!--
+document.head.insertAdjacentHTML('beforeend','<style>#table td:nth-child(n+3),#table td:nth-child(n+3) input,#table td:nth-child(n+3) select,#table td:nth-child(n+3) button{font-size:18px!important}#table td:nth-child(n+3) input,#table td:nth-child(n+3) select,#table td:nth-child(n+3) button{min-height:40px}.datecompact{position:relative!important;width:6.5ch!important;min-width:6.5ch}.datecompact .date-label{display:block;width:6.5ch;min-height:40px;padding:8px 4px;white-space:nowrap;overflow:hidden;border:1px solid #9ca3af;border-radius:5px;background:#fff;font-size:18px}.datecompact .date-real{position:absolute!important;inset:0!important;width:6.5ch!important;height:40px!important;min-height:40px!important;opacity:0;cursor:pointer}</style>');function compactDates(){document.querySelectorAll('#list td:nth-child(5) input[type="date"]:not(.date-real)').forEach(input=>{input.parentElement.classList.add('datecompact');input.classList.add('date-real');const label=document.createElement('span');label.className='date-label';const setLabel=()=>label.textContent=input.value?input.value.slice(5).replace('-','/'):'--/--';setLabel();input.before(label);input.addEventListener('input',setLabel)});document.querySelectorAll('#list .links .link:first-child').forEach(button=>button.textContent='複製')}new MutationObserver(compactDates).observe(list,{childList:true,subtree:true});window.openLink=function(i){const text=(tasks[i].link||'').trim();if(!text)return alert('尚未設定連結。');const copied=()=>alert('已複製連結／路徑。');if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(copied).catch(()=>fallbackCopy(text,copied))}else fallbackCopy(text,copied)};function fallbackCopy(text,done){const area=document.createElement('textarea');area.value=text;area.style.position='fixed';area.style.opacity='0';document.body.append(area);area.select();document.execCommand('copy');area.remove();done()}compactDates();</script></body></html>
