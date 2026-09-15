@@ -51,6 +51,12 @@
       .actions-cell .color, .actions-cell .danger { flex: 1 1 0; width: 0; min-width: 0; height: 32px; padding: 4px; }
       .actions-cell .danger { color: #b91c1c; border: 1px solid #fecaca; border-radius: 6px; background: #fef2f2; }
       .task-color { border-color: #9ca3af; }
+      .color-picker { position: relative; flex: 1 1 0; min-width: 0; }
+      .color-picker .color { width: 100%; }
+      .color-palette { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 2; display: none; grid-template-columns: repeat(5, 28px); gap: 5px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; box-shadow: 0 4px 12px #0002; }
+      .color-picker.show .color-palette { display: grid; }
+      #list tr.palette-open { overflow: visible; }
+      .color-swatch { width: 28px; height: 28px; min-height: 0; padding: 0; border: 1px solid #94a3b8; border-radius: 5px; }
       @media (max-width: 760px) { .actions-cell .color, .actions-cell .danger { height: 30px; } }
     </style>
     <style>
@@ -89,17 +95,31 @@
         const input = row.querySelector('input[type="color"]');
         if (!input) return;
         row.style.setProperty('--task-color', input.value);
-        const select = document.createElement('select');
-        select.className = 'color task-color';
-        select.title = '變更底色';
-        select.innerHTML = colors.map(([value, label]) => `<option value="${value}" style="background-color:${value}">${label || '　'}</option>`).join('');
-        select.value = colors.some(([value]) => value === input.value.toLowerCase()) ? input.value.toLowerCase() : '#ffffff';
-        select.style.backgroundColor = select.value;
-        select.onchange = () => {
-          row.style.setProperty('--task-color', select.value);
-          editTask(Number(input.getAttribute('onchange').match(/editTask\((\d+)/)[1]), 'color', select.value);
+        const picker = document.createElement('div');
+        picker.className = 'color-picker';
+        const trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'color task-color';
+        trigger.title = '變更底色';
+        trigger.style.backgroundColor = input.value;
+        const palette = document.createElement('div');
+        palette.className = 'color-palette';
+        colors.forEach(([value]) => {
+          const swatch = document.createElement('button');
+          swatch.type = 'button'; swatch.className = 'color-swatch';
+          swatch.style.backgroundColor = value;
+          swatch.onclick = () => {
+            row.style.setProperty('--task-color', value);
+            editTask(Number(input.getAttribute('onchange').match(/editTask\((\d+)/)[1]), 'color', value);
+          };
+          palette.append(swatch);
+        });
+        trigger.onclick = () => {
+          const isOpen = picker.classList.toggle('show');
+          row.classList.toggle('palette-open', isOpen);
         };
-        input.replaceWith(select);
+        picker.append(trigger, palette);
+        input.replaceWith(picker);
       });
     }
     const baseRender = render;
