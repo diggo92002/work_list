@@ -84,7 +84,7 @@
     function closeSync() { $('syncDialog').classList.remove('show'); } function copyExport() { copyText($('syncText').value, '待辦資料已複製，現在可貼到 LINE。'); }
     function importTasks() { let parsed; try { parsed = JSON.parse($('syncText').value.trim()); } catch { return alert('匯入文字格式不正確，請確認是從 LINE 複製完整的匯出內容。'); } const incoming = Array.isArray(parsed) ? parsed : parsed?.tasks; if (!Array.isArray(incoming) || !incoming.every(x => x && typeof x === 'object')) return alert('找不到待辦資料，請貼上本程式匯出的內容。'); const cleaned = incoming.map(normalise); if (!$('merge').checked && !confirm(`將以匯入的 ${cleaned.length} 筆資料取代目前 ${tasks.length} 筆資料，確定嗎？`)) return; tasks = $('merge').checked ? [...tasks, ...cleaned] : cleaned; save(); closeSync(); render(); alert(`已匯入 ${cleaned.length} 筆待辦資料。`); }
     function enhanceActions() {
-      const colors = [['#ffffff', '白色'], ['#dbeafe', '藍色'], ['#dcfce7', '綠色'], ['#fef3c7', '黃色'], ['#fee2e2', '紅色']];
+      const colors = [['#ffffff', ''], ['#dbeafe', ''], ['#dcfce7', ''], ['#fef3c7', ''], ['#fee2e2', '']];
       $('list').querySelectorAll('tr').forEach(row => {
         const input = row.querySelector('input[type="color"]');
         if (!input) return;
@@ -92,7 +92,7 @@
         const select = document.createElement('select');
         select.className = 'color task-color';
         select.title = '變更底色';
-        select.innerHTML = colors.map(([value, label]) => `<option value="${value}">${label}</option>`).join('');
+        select.innerHTML = colors.map(([value, label]) => `<option value="${value}" style="background-color:${value}">${label || '　'}</option>`).join('');
         select.value = colors.some(([value]) => value === input.value.toLowerCase()) ? input.value.toLowerCase() : '#ffffff';
         select.style.backgroundColor = select.value;
         select.onchange = () => {
