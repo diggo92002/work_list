@@ -1,0 +1,22 @@
+{
+  "name": "\u958b\u8239\u822a\u8de1\u7d00\u9304",
+  "short_name": "\u958b\u8239\u822a\u8de1",
+  "description": "\u8a18\u9304\u624b\u52d5\u5132\u5b58\u7684\u8239\u96bb\u822a\u8de1\u8207\u4f4d\u7f6e\u3002",
+  "lang": "zh-TW",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

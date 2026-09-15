@@ -1,68 +1,92 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>工作待辦</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; padding: 16px; background: #f5f6f8; color: #1f2937; font-family: "Microsoft JhengHei", system-ui, sans-serif; }
-    main { max-width: 1200px; margin: auto; }
-    .top, .tools, .toolbar, .form, .actions { display: flex; gap: 8px; align-items: center; }
-    .top { margin-bottom: 12px; flex-wrap: wrap; } h1 { margin: 0 auto 0 0; font-size: 28px; }
-    button, input, select, textarea { font: inherit; border: 1px solid #9ca3af; border-radius: 6px; background: #fff; }
-    button, input, select { min-height: 38px; padding: 7px 10px; } button { cursor: pointer; }
-    button.primary { color: #fff; background: #2563eb; border-color: #2563eb; } button.danger { color: #b91c1c; border-color: transparent; background: transparent; }
-    .toolbar { padding: 10px 12px; margin-bottom: 12px; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px #0000000d; }
-    .toolbar .spacer { flex: 1; }.form { display: grid; grid-template-columns: 1.35fr 1.1fr 1.15fr 120px 145px auto; padding: 12px; margin-bottom: 12px; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px #0000000d; }
-    table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 8px; background: transparent; } th, td { padding: 9px 10px; vertical-align: middle; } th { padding: 0 10px 5px; border: 0; color: #64748b; font-size: 13px; font-weight: 700; text-align: left; } #list tr { filter: drop-shadow(0 1px 1px #0000000d); } #list td { border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; background: #fff; } #list td:first-child { border-left: 1px solid #e2e8f0; border-radius: 9px 0 0 9px; } #list td:last-child { border-right: 1px solid #e2e8f0; border-radius: 0 9px 9px 0; } #list input:not([type="color"]) { border-color: transparent; background: transparent; } #list input:not([type="color"]):focus { border-color: #60a5fa; background: #fff; outline: 2px solid #dbeafe; } #list td:first-child input { font-weight: 700; color: #111827; } #list td:nth-child(2) input { color: #64748b; font-size: 14px; } td input, td select { width: 100%; }
-    .link { color: #2563eb; text-decoration: none; border: 0; padding: 4px; min-height: auto; background: transparent; }.link:hover { text-decoration: underline; }.color { width: 30px; height: 30px; padding: 2px; }.actions-cell { white-space: nowrap; }.status-select { border: 0; border-radius: 99px; font-weight: 700; text-align: center; }.status-select[value="未開始"] { background: #e5e7eb; color: #374151; }.status-select[value="進行中"] { background: #dbeafe; color: #1d4ed8; }.status-select[value="等待中"] { background: #fef3c7; color: #92400e; }.status-select[value="已完成"] { background: #dcfce7; color: #15803d; }.empty { padding: 28px; text-align: center; background: #fff; border-radius: 8px; color: #6b7280; }.hidden { display: none !important; }
-    body.links-hidden #taskLink, body.links-hidden #table th:nth-child(3), body.links-hidden #list td:nth-child(3) { display: none; }
-    .dialog-mask { position: fixed; inset: 0; z-index: 10; display: none; padding: 18px; background: #0008; align-items: center; justify-content: center; }.dialog-mask.show { display: flex; }.dialog { width: min(680px, 100%); padding: 18px; border-radius: 10px; background: #fff; }.dialog h2 { margin: 0 0 8px; font-size: 20px; }.dialog p { margin: 0 0 12px; color: #4b5563; line-height: 1.5; }textarea { display: block; width: 100%; min-height: 240px; padding: 10px; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }.dialog .actions { justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }.import-option { display: flex; gap: 6px; align-items: center; margin: 10px 0; }
-    @media (max-width: 760px) { body { padding: 8px; }.tools, .toolbar { width: 100%; }.tools button, .toolbar button { flex: 1; }.toolbar { flex-wrap: wrap; }.toolbar .spacer { display: none; }.form { grid-template-columns: 1fr; }table, thead, tbody, tr, td { display: block; width: 100%; } thead { display: none; } tr { margin-bottom: 10px; border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; } td { display: grid; grid-template-columns: 72px 1fr; gap: 8px; border: 0; border-bottom: 1px solid #e5e7eb; } td:last-child { border-bottom: 0; } td::before { content: attr(data-label); color: #4b5563; font-weight: bold; } td.actions-cell { display: flex; justify-content: flex-end; } td.actions-cell::before { display: none; } }
-  </style>
-  <style>
-    @media (max-width: 760px) {
-      #list tr { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); margin-bottom: 8px; border: 1px solid #d1d5db; border-radius: 9px; overflow: hidden; background: #fff; }
-      #list td, #list td:first-child, #list td:last-child { display: flex; flex-direction: column; align-items: stretch; gap: 3px; min-width: 0; padding: 6px 9px; border: 0; border-bottom: 1px solid #e5e7eb; border-radius: 0; }
-      #list td::before { font-size: 12px; line-height: 1.2; }
-      #list td:nth-child(1), #list td:nth-child(2) { grid-column: span 5; }
-      #list td:nth-child(3) { grid-column: 1 / -1; }
-      #list td:nth-child(4), #list td:nth-child(5) { grid-column: span 4; }
-      #list td:nth-child(5), #list td:nth-child(6) { border-left: 1px solid #e5e7eb; }
-      #list td:nth-child(6) { grid-column: span 2; }
-      #list td:last-child { flex-direction: row; justify-content: flex-end; align-items: center; border-bottom: 0; min-height: 42px; }
-      #list td:last-child::before { display: none; }
-      #list td input:not([type="color"]), #list td select { min-height: 32px; padding: 4px 6px; }
-      #list td:first-child input { font-size: 16px; }
-      #list td:nth-child(2) input { font-size: 13px; }
-      #list .links { min-height: 28px; }
-      #list .actions-cell .color { width: 28px; height: 28px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="手機開船航跡紀錄工具">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="開船航跡">
+<title>開船航跡紀錄</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--line:#334155;--text:#f8fafc;--muted:#94a3b8;--blue:#38bdf8;--green:#22c55e;--red:#ef4444}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",sans-serif}.app{width:min(100%,760px);margin:auto;padding:calc(20px + env(safe-area-inset-top)) 12px calc(28px + env(safe-area-inset-bottom))}.header{text-align:center;padding:5px 0}.header h1{margin:0;color:var(--blue);font-size:1.35rem}.header p{margin:5px 0 0;font-size:.78rem;color:var(--muted)}.card{margin-top:12px;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,.14)}.title-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}.title{flex:1;color:var(--blue);font-weight:800}.actions{display:flex;gap:6px}.btn{border:0;border-radius:8px;padding:9px 11px;font:inherit;font-weight:700;cursor:pointer}.btn-small{padding:6px 8px;font-size:.76rem}.btn-primary{background:var(--blue);color:#082f49}.btn-green{background:var(--green);color:#052e16}.btn-dark{color:var(--text);background:#0f172a;border:1px solid var(--line)}.btn-danger{color:#fecaca;background:transparent;border:1px solid #7f1d1d}.status{padding:10px;border:1px solid #0ea5e9;border-radius:9px;background:#0f172a;color:#dbeafe;font-size:.8rem;line-height:1.55}.status strong{color:var(--blue)}#map{height:320px;margin-top:10px;border:1px solid var(--line);border-radius:9px;overflow:hidden}.hint{margin-top:8px;color:var(--muted);font-size:.75rem;line-height:1.5}.route-list{display:flex;flex-direction:column;gap:8px}.route-item{display:flex;align-items:flex-start;gap:9px;padding:9px;border:1px solid var(--line);border-radius:9px;background:#0f172a}.route-main{flex:1;min-width:0}.route-title{font-size:.85rem;font-weight:800}.route-meta{margin-top:3px;font-size:.74rem;color:var(--muted);word-break:break-all}.tag{display:inline-block;margin-left:5px;padding:2px 5px;border-radius:999px;background:#164e63;color:#bae6fd;font-size:.65rem}.empty{padding:8px 0;color:var(--muted);font-size:.82rem}.leaflet-control-attribution{font-size:8px!important}@media(max-width:520px){.app{padding:calc(18px + env(safe-area-inset-top)) 10px calc(24px + env(safe-area-inset-bottom))}#map{height:280px}.title-row{align-items:flex-start}.actions{gap:4px}.actions .btn{padding:6px 7px;font-size:.72rem}}
+</style>
 </head>
 <body>
-  <main>
-    <div class="top"><h1>工作待辦</h1><div class="tools"><button id="todoBtn" class="primary" onclick="setView('todo')">進行中</button><button id="doneBtn" onclick="setView('done')">已完成</button></div></div>
-    <div class="toolbar"><button id="addToggle" class="primary" onclick="toggleAddForm()">＋ 新增</button><span class="spacer"></span><button id="linkToggle" onclick="toggleLinks()">隱藏連結</button><button onclick="openSync('export')">匯出</button><button onclick="openSync('import')">匯入</button></div>
-    <section id="addForm" class="form hidden"><input id="work" placeholder="工作項目（必填）"><input id="note" placeholder="備註"><input id="taskLink" placeholder="連結或檔案路徑"><select id="status"><option>未開始</option><option>進行中</option><option>等待中</option><option>已完成</option></select><input id="date" type="date"><button class="primary" onclick="addTask()">新增</button></section>
-    <div id="empty" class="empty hidden"></div><table id="table"><thead><tr><th style="width:30%">工作項目</th><th style="width:23%">備註</th><th style="width:12%">連結</th><th style="width:120px">狀態</th><th style="width:145px">日期</th><th style="width:105px">操作</th></tr></thead><tbody id="list"></tbody></table>
-  </main>
-  <div id="syncDialog" class="dialog-mask" onclick="if(event.target===this)closeSync()"><div class="dialog"><h2 id="syncTitle"></h2><p id="syncHelp"></p><label id="importMode" class="import-option hidden"><input id="merge" type="checkbox"> 保留目前資料，將匯入資料接在後面（不勾選會取代目前資料）</label><textarea id="syncText" spellcheck="false"></textarea><div class="actions"><button onclick="closeSync()">取消</button><button id="copyButton" class="primary" onclick="copyExport()">複製到剪貼簿</button><button id="importButton" class="primary hidden" onclick="importTasks()">確認匯入</button></div></div></div>
-  <script>
-    const storageKey = 'Engineering_Work_List', linkDisplayKey = 'Engineering_Work_List_show_links', statuses = ['未開始', '進行中', '等待中', '已完成']; let tasks = loadTasks(), currentView = 'todo', linksVisible = localStorage.getItem(linkDisplayKey) !== 'false';
-    const $ = id => document.getElementById(id), today = () => new Date().toLocaleDateString('en-CA'), escapeHtml = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-    function normalise(item) { return { work: '', note: '', link: '', status: '未開始', date: '', color: '#ffffff', ...item, status: statuses.includes(item?.status) ? item.status : '未開始' }; }
-    function loadTasks() { try { const value = JSON.parse(localStorage.getItem(storageKey) || '[]'); return Array.isArray(value) ? value.map(normalise) : []; } catch { return []; } } function save() { localStorage.setItem(storageKey, JSON.stringify(tasks)); }
-    function addTask() { const task = normalise({ work: $('work').value.trim(), note: $('note').value.trim(), link: $('taskLink').value.trim(), status: $('status').value, date: $('date').value || today() }); if (!task.work) return alert('請輸入工作項目。'); tasks.push(task); save(); $('work').value = $('note').value = $('taskLink').value = ''; $('date').value = today(); render(); }
-    function editTask(index, field, value) { tasks[index][field] = value; save(); render(); } function deleteTask(index) { if (confirm('確定要刪除這筆待辦嗎？')) { tasks.splice(index, 1); save(); render(); } } function setView(value) { currentView = value; render(); } function toggleLinks() { linksVisible = !linksVisible; localStorage.setItem(linkDisplayKey, linksVisible); render(); } function toggleAddForm() { const closed = $('addForm').classList.toggle('hidden'); $('addToggle').textContent = closed ? '＋ 新增' : '收合'; if (!closed) $('work').focus(); }
-    function editLink(index) { const value = prompt('請輸入連結或檔案路徑：', tasks[index].link || ''); if (value !== null) editTask(index, 'link', value.trim()); } function copyLink(index) { const value = tasks[index].link || ''; if (!value) return alert('這筆待辦尚未設定連結。'); copyText(value, '連結已複製，可貼到 LINE 或瀏覽器。'); }
-    function copyText(value, message) { navigator.clipboard?.writeText(value).then(() => alert(message)).catch(() => { const area = document.createElement('textarea'); area.value = value; document.body.append(area); area.select(); document.execCommand('copy'); area.remove(); alert(message); }); } function statusOptions(value) { return statuses.map(s => `<option ${s === value ? 'selected' : ''}>${s}</option>`).join(''); }
-    function render() { const rows = tasks.map((task, index) => ({ task: normalise(task), index })).filter(x => currentView === 'done' ? x.task.status === '已完成' : x.task.status !== '已完成'); document.body.classList.toggle('links-hidden', !linksVisible); $('linkToggle').textContent = linksVisible ? '隱藏連結' : '顯示連結'; $('todoBtn').classList.toggle('primary', currentView === 'todo'); $('doneBtn').classList.toggle('primary', currentView === 'done'); $('empty').textContent = currentView === 'done' ? '尚無已完成的待辦。' : '尚無進行中的待辦。'; $('empty').classList.toggle('hidden', rows.length > 0); $('table').classList.toggle('hidden', rows.length === 0); $('list').innerHTML = rows.map(({task, index}) => `<tr style="background:${escapeHtml(task.color)}"><td data-label="工作"><input value="${escapeHtml(task.work)}" onchange="editTask(${index}, 'work', this.value)"></td><td data-label="備註"><input value="${escapeHtml(task.note)}" onchange="editTask(${index}, 'note', this.value)"></td><td data-label="連結"><button class="link" onclick="copyLink(${index})">複製</button>　<button class="link" onclick="editLink(${index})">編輯</button></td><td data-label="狀態"><select class="status-select" value="${escapeHtml(task.status)}" onchange="editTask(${index}, 'status', this.value)">${statusOptions(task.status)}</select></td><td data-label="日期"><input type="date" value="${escapeHtml(task.date)}" onchange="editTask(${index}, 'date', this.value)"></td><td class="actions-cell"><input class="color" type="color" value="${escapeHtml(task.color)}" title="列顏色" onchange="editTask(${index}, 'color', this.value)"><button class="danger" onclick="deleteTask(${index})">刪除</button></td></tr>`).join(''); }
-    function openSync(mode) { const exporting = mode === 'export'; $('syncTitle').textContent = exporting ? '匯出待辦資料' : '匯入待辦資料'; $('syncHelp').textContent = exporting ? '按「複製到剪貼簿」後，直接貼到 LINE 傳給自己；另一台裝置開啟本頁後，貼到匯入框即可。' : '請從 LINE 複製先前匯出的完整文字，貼在下方。'; $('syncText').value = exporting ? JSON.stringify({ app: '工作待辦', version: 1, exportedAt: new Date().toISOString(), tasks }, null, 2) : ''; $('syncText').readOnly = exporting; $('importMode').classList.toggle('hidden', exporting); $('copyButton').classList.toggle('hidden', !exporting); $('importButton').classList.toggle('hidden', exporting); $('syncDialog').classList.add('show'); $('syncText').focus(); if (exporting) $('syncText').select(); }
-    function closeSync() { $('syncDialog').classList.remove('show'); } function copyExport() { copyText($('syncText').value, '待辦資料已複製，現在可貼到 LINE。'); }
-    function importTasks() { let parsed; try { parsed = JSON.parse($('syncText').value.trim()); } catch { return alert('匯入文字格式不正確，請確認是從 LINE 複製完整的匯出內容。'); } const incoming = Array.isArray(parsed) ? parsed : parsed?.tasks; if (!Array.isArray(incoming) || !incoming.every(x => x && typeof x === 'object')) return alert('找不到待辦資料，請貼上本程式匯出的內容。'); const cleaned = incoming.map(normalise); if (!$('merge').checked && !confirm(`將以匯入的 ${cleaned.length} 筆資料取代目前 ${tasks.length} 筆資料，確定嗎？`)) return; tasks = $('merge').checked ? [...tasks, ...cleaned] : cleaned; save(); closeSync(); render(); alert(`已匯入 ${cleaned.length} 筆待辦資料。`); }
-    $('date').value = today(); render();
-  </script>
+<main class="app">
+  <header class="header"><h1>🛥️ 開船航跡紀錄</h1><p>定位顯示目前位置，航跡只在手動儲存時新增</p></header>
+  <section class="card">
+    <div class="title-row"><div class="title">📍 目前位置／航跡地圖</div><div class="actions"><button class="btn btn-primary btn-small" onclick="centerOnCurrentLocation()">回到目前位置</button><button id="locationToggleBtn" class="btn btn-dark btn-small" onclick="toggleAutoCenter()">自動回到位置：關</button></div></div>
+    <div id="locationStatus" class="status"><strong>📡 定位更新已開啟</strong><br>正在取得手機位置…</div>
+    <div id="map"></div>
+    <div class="hint">藍點為手機目前位置。「自動回到位置」開啟時，每次開啟頁面取得首次定位後會置中一次；設定會保留。頁面開啟時會嘗試保持螢幕喚醒；iPhone 將網頁切到背景時，系統仍可能暫停定位。</div>
+  </section>
+  <section class="card">
+    <div class="title">📝 手動記錄位置</div>
+    <button class="btn btn-green" style="width:100%" onclick="saveManualPoint()">＋ 記錄目前位置</button>
+    <div class="hint">每按一次會新增一筆「手動記錄」；若尚未取得定位，按鈕不會建立紀錄。</div>
+  </section>
+  <section class="card">
+    <div class="title-row"><div class="title">🧭 本次軌跡</div><div class="actions"><button class="btn btn-green btn-small" onclick="archiveCurrentRoute()">儲存本次</button><button class="btn btn-danger btn-small" onclick="clearRouteRecords()">清除本次</button></div></div>
+    <div id="routeList" class="route-list"></div>
+  </section>
+  <section class="card">
+    <div class="title-row"><div class="title">📚 歷史軌跡</div><button class="btn btn-dark btn-small" onclick="showCurrentRoute()">顯示本次</button></div>
+    <div id="historyList" class="route-list"></div>
+  </section>
+</main>
+<script>
+const STORAGE_KEY='boat_route_records_v1';
+const HISTORY_STORAGE_KEY='boat_route_history_v1';
+const AUTO_CENTER_ENABLED_KEY='boat_route_auto_center_enabled_v1';
+let routeRecords=[];
+let routeHistory=[];
+let viewingHistoryId=null;
+let map,currentMarker,routeLine,pointLayer;
+let currentPosition=null;
+let watchId=null;
+let autoCenterEnabled=true;
+let hasAutoCentered=false;
+let screenWakeLock=null;
+function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function formatTime(iso){const date=new Date(iso);return Number.isNaN(date.getTime())?'':date.toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});}
+function distanceMeters(a,b){const r=Math.PI/180,dLat=(b.lat-a.lat)*r,dLon=(b.lon-a.lon)*r,x=Math.sin(dLat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLon/2)**2;return 6371000*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function loadRecords(){try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');routeRecords=Array.isArray(saved)?saved.filter(r=>r.type==='manual'&&Number.isFinite(Number(r.lat))&&Number.isFinite(Number(r.lon))):[];}catch{routeRecords=[];}}
+function saveRecords(){localStorage.setItem(STORAGE_KEY,JSON.stringify(routeRecords));}
+function loadHistory(){try{const saved=JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY)||'[]');routeHistory=Array.isArray(saved)?saved.filter(s=>s&&typeof s.id==='string'&&Array.isArray(s.records)).map(s=>({...s,records:s.records.filter(r=>r.type==='manual'&&Number.isFinite(Number(r.lat))&&Number.isFinite(Number(r.lon)))})):[];}catch{routeHistory=[];}}
+function saveHistory(){localStorage.setItem(HISTORY_STORAGE_KEY,JSON.stringify(routeHistory));}
+function loadSettings(){try{const saved=localStorage.getItem(AUTO_CENTER_ENABLED_KEY);autoCenterEnabled=saved===null?true:saved==='true';}catch{autoCenterEnabled=true;}}
+function initMap(){map=L.map('map',{zoomControl:true}).setView([23.7,121],7);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);routeLine=L.polyline([],{color:'#38bdf8',weight:4,opacity:.85}).addTo(map);pointLayer=L.layerGroup().addTo(map);setTimeout(()=>map.invalidateSize(),80);}
+function getViewedSession(){return viewingHistoryId?routeHistory.find(s=>s.id===viewingHistoryId):null;}
+function getDisplayedRecords(){return getViewedSession()?.records||routeRecords;}
+function renderMap(){const records=getDisplayedRecords(),isHistory=!!getViewedSession();routeLine.setLatLngs(records.map(r=>[r.lat,r.lon]));pointLayer.clearLayers();records.forEach(r=>{const marker=L.circleMarker([r.lat,r.lon],{radius:6,weight:2,color:'#fff',fillColor:'#22c55e',fillOpacity:1}).addTo(pointLayer);marker.bindPopup(`<strong>手動記錄</strong><br>${esc(formatTime(r.savedAt))}<br>${Number(r.lat).toFixed(6)}, ${Number(r.lon).toFixed(6)}${isHistory?'':`<br><button class="btn btn-dark btn-small" onclick="deleteRouteRecord('${esc(r.id)}')">刪除這筆</button>`}`);});}
+function renderList(){const list=document.getElementById('routeList');if(!routeRecords.length){list.innerHTML='<div class="empty">尚無本次軌跡。</div>';return;}list.innerHTML=[...routeRecords].reverse().map((r,reverseIndex)=>{const index=routeRecords.length-1-reverseIndex;return `<div class="route-item"><div class="route-main"><div class="route-title">手動記錄<span class="tag">第 ${index+1} 筆</span></div><div class="route-meta">${esc(formatTime(r.savedAt))}<br>${Number(r.lat).toFixed(6)}, ${Number(r.lon).toFixed(6)}${Number.isFinite(r.accuracy)?`｜精度約 ±${Math.round(r.accuracy)} m`:''}</div></div><button class="btn btn-danger btn-small" onclick="deleteRouteRecord('${esc(r.id)}')">刪除</button></div>`;}).join('');}
+function renderHistoryList(){const list=document.getElementById('historyList');if(!routeHistory.length){list.innerHTML='<div class="empty">尚無已儲存的軌跡。</div>';return;}list.innerHTML=routeHistory.map(s=>`<div class="route-item"><div class="route-main"><div class="route-title">${esc(formatTime(s.savedAt))}${s.id===viewingHistoryId?'<span class="tag">正在檢視</span>':''}</div><div class="route-meta">${s.records.length} 筆手動記錄</div></div><div class="actions"><button class="btn btn-dark btn-small" onclick="viewHistory('${esc(s.id)}')">查看</button><button class="btn btn-danger btn-small" onclick="deleteHistory('${esc(s.id)}')">刪除</button></div></div>`).join('');}
+function render(){renderMap();renderList();renderHistoryList();}
+function updateLocationStatus(message){document.getElementById('locationStatus').innerHTML=message;}
+function updateToggleButton(){const button=document.getElementById('locationToggleBtn');button.textContent=`自動回到位置：${autoCenterEnabled?'開':'關'}`;button.classList.toggle('btn-primary',autoCenterEnabled);button.classList.toggle('btn-dark',!autoCenterEnabled);}
+function addRoutePoint(position,type){viewingHistoryId=null;const record={id:`route_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,lat:Number(position.lat),lon:Number(position.lon),accuracy:position.accuracy??null,savedAt:new Date().toISOString(),type};routeRecords.push(record);routeRecords=routeRecords.slice(-5000);saveRecords();render();}
+function handlePosition(position){const lat=Number(position.coords.latitude),lon=Number(position.coords.longitude),accuracy=Number(position.coords.accuracy);if(!Number.isFinite(lat)||!Number.isFinite(lon))return;currentPosition={lat,lon,accuracy:Number.isFinite(accuracy)?accuracy:null};if(currentMarker)currentMarker.setLatLng([lat,lon]);else currentMarker=L.circleMarker([lat,lon],{radius:8,weight:3,color:'#e0f2fe',fillColor:'#2563eb',fillOpacity:1}).addTo(map).bindPopup('手機目前位置');const accuracyText=Number.isFinite(accuracy)?`｜精度約 ±${Math.round(accuracy)} m`:'';updateLocationStatus(`<strong>📡 定位更新已開啟</strong><br>${lat.toFixed(6)}, ${lon.toFixed(6)}${accuracyText}`);if(autoCenterEnabled&&!hasAutoCentered){hasAutoCentered=true;centerOnCurrentLocation();}}
+function handleLocationError(error){const message={1:'定位權限被拒絕，請到瀏覽器設定允許位置權限。',2:'目前無法取得手機位置，請稍後再試。',3:'定位逾時，系統會持續嘗試。'}[error?.code]||'目前無法取得手機位置。';updateLocationStatus(`<strong>📡 定位更新已開啟</strong><br>${message}`);}
+function startLocationTracking(){if(!navigator.geolocation){updateLocationStatus('<strong>定位無法使用</strong><br>這個瀏覽器不支援手機定位。');return;}if(watchId!==null)return;watchId=navigator.geolocation.watchPosition(handlePosition,handleLocationError,{enableHighAccuracy:true,maximumAge:3000,timeout:20000});}
+function toggleAutoCenter(){autoCenterEnabled=!autoCenterEnabled;localStorage.setItem(AUTO_CENTER_ENABLED_KEY,String(autoCenterEnabled));if(autoCenterEnabled&&currentPosition){hasAutoCentered=true;centerOnCurrentLocation();}updateToggleButton();}
+async function keepScreenAwake(){if(document.hidden||screenWakeLock||!('wakeLock' in navigator))return;try{screenWakeLock=await navigator.wakeLock.request('screen');screenWakeLock.addEventListener('release',()=>{screenWakeLock=null;});}catch{screenWakeLock=null;}}
+function centerOnCurrentLocation(){if(currentPosition){map.setView([currentPosition.lat,currentPosition.lon],16);return;}if(!navigator.geolocation){updateLocationStatus('<strong>定位無法使用</strong><br>這個瀏覽器不支援手機定位。');return;}updateLocationStatus('<strong>📡 正在取得目前位置</strong><br>取得完成後會自動移到目前位置。');navigator.geolocation.getCurrentPosition(position=>{handlePosition(position);map.setView([currentPosition.lat,currentPosition.lon],16);},handleLocationError,{enableHighAccuracy:true,maximumAge:0,timeout:20000});}
+function saveManualPoint(){if(currentPosition){addRoutePoint(currentPosition,'manual');alert('已記錄目前位置。');return;}if(!navigator.geolocation){updateLocationStatus('<strong>定位無法使用</strong><br>這個瀏覽器不支援手機定位。');return;}updateLocationStatus('<strong>📡 正在取得目前位置</strong><br>請確認已允許位置權限，並保持在空曠處。');navigator.geolocation.getCurrentPosition(position=>{handlePosition(position);addRoutePoint(currentPosition,'manual');alert('已記錄目前位置。');},handleLocationError,{enableHighAccuracy:true,maximumAge:0,timeout:20000});}
+function deleteRouteRecord(id){routeRecords=routeRecords.filter(r=>r.id!==id);saveRecords();render();}
+function clearRouteRecords(){if(!routeRecords.length)return;if(!confirm(`要清除本次 ${routeRecords.length} 筆軌跡嗎？未儲存的資料將無法回復。`))return;routeRecords=[];viewingHistoryId=null;saveRecords();render();}
+function archiveCurrentRoute(){if(!routeRecords.length){alert('本次尚無軌跡可儲存。');return;}const savedAt=new Date().toISOString();if(!confirm(`要儲存這次的 ${routeRecords.length} 筆軌跡，並清空本次航程嗎？`))return;routeHistory.unshift({id:`history_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,savedAt,records:routeRecords});try{saveHistory();routeRecords=[];viewingHistoryId=null;saveRecords();render();alert(`已儲存：${formatTime(savedAt)}`);}catch{routeHistory.shift();alert('儲存空間不足，未清空本次軌跡。');}}
+function viewHistory(id){if(!routeHistory.some(s=>s.id===id))return;viewingHistoryId=id;render();const records=getDisplayedRecords();if(records.length){map.fitBounds(L.latLngBounds(records.map(r=>[r.lat,r.lon])),{padding:[28,28],maxZoom:16});}}
+function showCurrentRoute(){viewingHistoryId=null;render();}
+function deleteHistory(id){const session=routeHistory.find(s=>s.id===id);if(!session||!confirm(`要刪除 ${formatTime(session.savedAt)} 的歷史軌跡嗎？`))return;routeHistory=routeHistory.filter(s=>s.id!==id);if(viewingHistoryId===id)viewingHistoryId=null;saveHistory();render();}
+loadRecords();loadHistory();loadSettings();initMap();render();updateToggleButton();startLocationTracking();keepScreenAwake();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(watchId===null)startLocationTracking();keepScreenAwake();}});
+</script>
 </body>
 </html>
