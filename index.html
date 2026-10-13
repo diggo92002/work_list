@@ -112,11 +112,44 @@
       #categoryFilter, #categorySort { min-width: 0; width: 96px; max-width: 120px; padding-left: 5px; padding-right: 5px; }
       .toolbar { flex-wrap: wrap; }
     </style>
+    <style>
+      .view-controls, .category-controls { display: flex; align-items: center; gap: 8px; }
+      .category-controls { flex-shrink: 0; }
+      .category-controls label, .tools button, .toolbar button { white-space: nowrap; }
+      @media (max-width: 760px) {
+        .view-controls { width: 100%; flex-wrap: wrap; }
+        .category-controls { width: 100%; }
+        .toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; }
+        .toolbar .spacer { display: none; }
+        .toolbar button { padding-left: 8px; padding-right: 8px; }
+      }
+    </style>
+    <style>
+      .tools button { min-width: 0; padding-left: 5px; padding-right: 5px; }
+      @media (max-width: 760px) {
+        .view-controls .tools { width: calc(50% - 4px); }
+      }
+    </style>
+    <style>
+      @media (max-width: 760px) {
+        .view-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+        .view-controls .category-controls { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); width: auto; min-width: 0; gap: 6px; }
+        .category-controls #categoryFilter, .category-controls #categorySort { width: 100%; max-width: 96px; }
+        .view-controls .tools { width: auto; gap: 6px; }
+        .view-controls .tools button { flex: 0 0 auto; width: 72px; padding-left: 4px; padding-right: 4px; }
+      }
+      @media (max-width: 360px) {
+        .view-controls { gap: 4px; }
+        .view-controls .category-controls { gap: 3px; }
+        .view-controls .tools { gap: 4px; }
+        .view-controls .tools button { width: 60px; }
+      }
+    </style>
 </head>
 <body>
   <main>
-    <div class="top"><h1>工作待辦</h1><div class="tools"><button id="todoBtn" class="primary" onclick="setView('todo')">進行中</button><button id="doneBtn" onclick="setView('done')">已完成</button></div></div>
-    <div class="toolbar"><button id="addToggle" class="primary" onclick="toggleAddForm()">＋ 新增</button><label for="categoryFilter">分類</label><select id="categoryFilter" aria-label="篩選分類" onchange="categoryFilter = this.value; render()"><option value="">全部分類</option></select><select id="categorySort" aria-label="分類排序" onchange="categorySort = this.value; render()"><option value="">原始順序</option><option value="asc">分類升冪 ↑</option><option value="desc">分類降冪 ↓</option></select><span class="spacer"></span><button id="linkToggle" onclick="toggleLinks()">隱藏連結</button><button onclick="openSync('export')">匯出</button><button onclick="openSync('import')">匯入</button></div>
+    <div class="top"><h1>工作待辦</h1><div class="view-controls"><div class="category-controls"><label for="categoryFilter">分類</label><select id="categoryFilter" aria-label="篩選分類" onchange="categoryFilter = this.value; render()"><option value="">全部分類</option></select><select id="categorySort" aria-label="分類排序" onchange="categorySort = this.value; render()"><option value="">原始順序</option><option value="asc">分類升冪 ↑</option><option value="desc">分類降冪 ↓</option></select></div><div class="tools"><button id="todoBtn" class="primary" onclick="setView('todo')">進行中</button><button id="doneBtn" onclick="setView('done')">已完成</button></div></div></div>
+    <div class="toolbar"><button id="addToggle" class="primary" onclick="toggleAddForm()">＋ 新增</button><span class="spacer"></span><button id="linkToggle" onclick="toggleLinks()">隱藏連結</button><button onclick="openSync('export')">匯出</button><button onclick="openSync('import')">匯入</button></div>
     <section id="addForm" class="form hidden"><input id="custom" placeholder="分類" aria-label="分類"><input id="work" placeholder="工作項目（必填）"><input id="note" placeholder="備註"><input id="taskLink" placeholder="連結或檔案路徑"><select id="status"><option>未開始</option><option>進行中</option><option>等待中</option><option>已完成</option></select><input id="date" type="date"><button class="primary" onclick="addTask()">新增</button></section>
     <div id="empty" class="empty hidden"></div><table id="table"><thead><tr><th id="categoryHeading" style="width:45px" aria-sort="none"><button id="categorySortButton" type="button" onclick="toggleCategorySort()" title="點擊切換分類排序">分類</button></th><th style="width:30%">工作項目</th><th style="width:23%">備註</th><th style="width:12%">連結</th><th style="width:60px">狀態</th><th style="width:145px">日期</th><th style="width:64px">操作</th></tr></thead><tbody id="list"></tbody></table>
   </main>
